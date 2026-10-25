@@ -7,8 +7,9 @@ from crud import (
     adds_users_from_rand_fio,
     my_select_query
     )
+from config import logger
     
-
+@logger.catch
 def menu():
     while True:
         try:
@@ -101,11 +102,14 @@ def menu():
 
             
             elif action == 4:
-                select_users()
+                all_users = select_users()
+                for user in all_users:
+
+                    print(f'\n{user}\n')
                 user = input('Введите ID пользователя которого нужно удалить (DROP ALL - Удалить все таблицы): ')
                 if user.isdigit() or user == 'DROP ALL':
                     if user == 'DROP ALL':
-                        if input('Подтвердите удаление всех таблиц. Введите "УДАЛИТЬ ВСЕ: "') == 'УДАЛИТЬ ВСЕ':
+                        if input('Подтвердите удаление всех таблиц. Введите "УДАЛИТЬ ВСЕ": ') == 'УДАЛИТЬ ВСЕ':
                             delete_all_table_from_database()
                             break
                     else:
@@ -125,6 +129,6 @@ def menu():
                 print()
                 continue
         except ValueError as err:
-            print(f'ValueError: {err}')
+            logger.error(err)
             print()
             continue

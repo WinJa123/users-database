@@ -2,3 +2,6 @@
 __pycache__/
 .env
 *.db
+logs/
+*.log
+*.zip

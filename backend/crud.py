@@ -3,6 +3,7 @@ from sqlalchemy import select
 from database import SessionLocal, Base, engine
 from models import UsersORM
 from rand_users import generation_fio, generation_age, generation_have_pc
+from config import logger
 
  
 def select_users() -> str:
@@ -11,6 +12,7 @@ def select_users() -> str:
         result = session.execute(query)
         users = result.scalars().all()
 
+        logger.info('SELECT запрос выполнен (получение всех пользователей).')
         return users
 
 def add_user(fullname: str, age: int, have_pc: bool) -> str:
@@ -19,10 +21,12 @@ def add_user(fullname: str, age: int, have_pc: bool) -> str:
             new_user = UsersORM(fullname=fullname, age=age, have_pc=have_pc)
             session.add(new_user)
             session.commit()
-            return 'Данные сохранены'
+
+            return logger.info(f'Пользователь "{[new_user]}" создан.')
         except Exception as err:
             session.rollback()
-            return f'Error: {err}'
+
+            return logger.error(err)
 
 def update_user(id: int, new_fio: str = '', new_age: int = -1, have_pc: bool = None) -> str:
     with SessionLocal() as session:
@@ -35,10 +39,12 @@ def update_user(id: int, new_fio: str = '', new_age: int = -1, have_pc: bool = N
             if have_pc != None:
                 user.have_pc = have_pc
             session.commit()
-            return 'Изменения сохранены!'
+
+            return logger.info('Изменения сохранены.')
         except Exception as err:
             session.rollback()
-            return f'Error: {err}'
+
+            return logger.error(err)
 
 
 def delete_user(user_id: int) -> str:
@@ -47,9 +53,11 @@ def delete_user(user_id: int) -> str:
         if user is not None:
             session.delete(user)
             session.commit()
-            return f'Пользователь {user.fullname} удален'
+
+            return logger.info(f'Пользователь "{user.fullname}" удален.')
         else:
-            return 'Пользователь не найден'
+
+            return logger.warning('Пользователь не найден.')
 
 def delete_all_table_from_database() -> None:
     Base.metadata.drop_all(bind=engine)
@@ -66,13 +74,16 @@ def adds_users_from_rand_fio() -> str:
                 user = UsersORM(fullname=news_users[i], age=age, have_pc=have_pc)
                 session.add(user)
                 session.commit()
+                logger.info(f'Пользователь {[user]} добавлен.')
 
-            return 'УСПЕШНО'
+
+            return logger.info('Добавлено 15 случайных пользователей.') 
                 
         except Exception as err:
             
             session.rollback()
-            return f'Error: {err}'
+
+            return logger.error(err)
 
 
 
@@ -82,4 +93,6 @@ def my_select_query():
         query = select(UsersORM).select_from(UsersORM).filter(UsersORM.have_pc.contains(1)).group_by(UsersORM.fullname)
         result = session.execute(query)
         users = result.scalars().all()
+        logger.info('SELECT запрос выполнен (кастомный).')
         return users
+

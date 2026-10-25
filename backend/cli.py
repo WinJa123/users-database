@@ -4,6 +4,7 @@ from crud import (
     update_user,
     delete_user,
     delete_all_table_from_database,
+    search_user,
     adds_users_from_rand_fio,
     my_select_query
     )
@@ -17,46 +18,93 @@ def menu():
             print('2 - Добавить пользователя')
             print('3 - Обновление данных пользователя')
             print('4 - Удаление пользователя')
-            print('5 - Добавить 15 случайных пользователей')
-            print('6 - Кастомный SELECT запрос')
-            action = int(input('Выберите (от 1 до 6): '))
-            if action == 1:
+            print('5 - Найти пользователя по ID или ФИО')
+            print('6 - Добавить 15 случайных пользователей')
+            print('7 - Кастомный JOIN запрос')
+            print('Пустая строка - возврат в главное меню')
+            action = input('Выберите (от 1 до 7): ')
+            if action.isdigit() is False:
+                raise ValueError(f'Ожидалось Int. Получено {type(action)}')
+            
+            if int(action) == 1:
                 all_users = select_users()
-                for user in all_users:
+                for i, user in enumerate(all_users, 1):
 
-                    print(f'\n{user}\n')
+                    print(f'\n {i}. {user}\n')
 
-            elif action == 2:
+            elif int(action) == 2:
                 fullname = input('Введите ФИО: ').strip()
                 if fullname == '':
-                    print()
+                    print('ФИО не введено: возврат в главное меню')
                     continue
-                age = int(input('Введите возраст: '))
+
+                age = input('Введите возраст: ')
+                if age == '':
+                    print('Возраст не введен: возврат в главное меню')
+                    continue
+
+                if age.isdigit() is False:
+                    raise ValueError(f'Ожидалось Int. Получено {type(age)}')
 
                 have_pc = input('Наличие ПК (да/нет): ')
                 status_have_pc = {'да': True, '': None}.get(have_pc.replace(' ', '').lower(), False)
-                
-                answer = add_user(fullname=fullname, age=age, have_pc=status_have_pc)
+                if status_have_pc is True:
+                    model_pc = input('Введите модель вашего ПК: ')
+                answer = add_user(fullname=fullname, age=int(age), have_pc=status_have_pc, model_pc=model_pc)
                 print(answer)
 
-            elif action == 3:
+            elif int(action) == 3:
                 all_users = select_users()
-                for user in all_users:
+                for i, user in enumerate(all_users):
 
-                    print(f'\n{user}\n')
+                    print(f'\n{i}. {user}\n')
                 
 
-                user_id = int(input('Введите ID пользователя параметры которого нужно изменить: '))
+                user_id = input('Введите ID пользователя параметры которого нужно изменить: ')
+                if user_id == '':
+                    print('ID не введен: возврат в главное меню')
+                    continue
+
+                if user_id.isdigit() is False:
+                    raise ValueError(f'Ожидалось Int. Получено {type(user_id)}')
+                
+                answer = search_user(user_id)
+                if answer == '':
+                    print('Пользователь не найден: возврат в главное меню')
+                    continue
+                if answer is None:
+                    print('Неизвестная ошибка: возврат в главное меню')
+                    continue
+
                 print('\nВведите параметр пользователя который нужно обновить: (1 - ФИО, 2 - Возраст, 3 - Наличие ПК)')
                 print('При необходимости изменить несколько параметров - напишите подряд цифры параметров')
-                parameters = int(input('Ввод: '))
-                if parameters == 1 or parameters == 12 or parameters == 13 or parameters == 123:
+                parameters = input('Ввод: ')
+                if parameters == '':
+                    print('Параметры не введены: возврат в главное меню')
+                    continue
+
+                if parameters.isdigit() is False:
+                    raise ValueError(f'Ожидалось Int. Получено {type(parameters)}')
+                
+                int_parameters = int(int_parameters)
+                if int_parameters == 1 or int_parameters == 12 or int_parameters == 13 or int_parameters == 123:
                     fio = input('Введите новое ФИО: ')
-                    if parameters == 12:
-                        age = int(input('Введите новый возраст: '))
-                        answer = update_user(user_id, fio, age)
+                    if fio == '':
+                        print('ФИО не может быть пустым: возврат в главное меню')
+                        continue
+
+                    if int_parameters == 12:
+                        age = input('Введите новый возраст: ')
+                        if age == '':
+                            print('Возраст не введен: возврат в главное меню')
+                            continue
+
+                        if age.isdigit() is False:
+                            raise ValueError(f'Ожидалось Int. Получено {type(age)}')
+                        
+                        answer = update_user(user_id, fio, int(age))
                         print(answer)
-                    elif parameters == 13:
+                    elif int_parameters == 13:
                         if input('Наличие ПК (да/нет): ').lower() == 'да':
                             have_pc = True
                             answer = update_user(user_id, fio, have_pc)
@@ -65,11 +113,18 @@ def menu():
                             have_pc = False
                             answer = update_user(user_id, fio, have_pc)
                             print(answer)
-                    elif parameters == 123:
-                        age = int(input('Введите новый возраст: '))
+                    elif int_parameters == 123:
+                        age = input('Введите новый возраст: ')
+                        if age == '':
+                            print('Возраст не введен: возврат в главное меню')
+                            continue
+                        
+                        if age.isdigit() is False:
+                            raise ValueError(f'Ожидалось Int. Получено {type(age)}')
+                        
                         if input('Наличие ПК (да/нет): ').lower() == 'да':
                             have_pc = True
-                            answer = update_user(user_id, fio, age, have_pc)
+                            answer = update_user(user_id, fio, int(age), have_pc)
                             print(answer)
                         else:
                             have_pc = False
@@ -77,12 +132,19 @@ def menu():
                             print(answer)
                     answer = update_user(user_id, fio)
                     print(answer)
-                elif parameters == 2 or parameters == 23:
-                    age = int(input('Введите новый возраст: '))
-                    if parameters == 23:
+                elif int_parameters == 2 or int_parameters == 23:
+                    age = input('Введите новый возраст: ')
+                    if age == '':
+                        print('Возраст не введен: возврат в главное меню')
+                        continue                                 
+                                            
+                    if age.isdigit() is False:
+                        raise ValueError(f'Ожидалось Int. Получено {type(age)}')
+                    
+                    if int_parameters == 23:
                         if input('Наличие ПК (да/нет): ').lower() == 'да':
                             have_pc = True
-                            answer = update_user(user_id, age, have_pc)
+                            answer = update_user(user_id, int(age), have_pc)
                             print(answer)
                         else:
                             have_pc = False
@@ -90,7 +152,7 @@ def menu():
                             print(answer)
                     answer = update_user(user_id, age)
                     print(answer)
-                elif parameters == 3:
+                elif int_parameters == 3:
                     if input('Наличие ПК (да/нет): ').lower() == 'да':
                         have_pc = True
                         answer = update_user(user_id, have_pc)
@@ -101,7 +163,7 @@ def menu():
                         print(answer)
 
             
-            elif action == 4:
+            elif int(action) == 4:
                 all_users = select_users()
                 for user in all_users:
 
@@ -112,23 +174,39 @@ def menu():
                         if input('Подтвердите удаление всех таблиц. Введите "УДАЛИТЬ ВСЕ": ') == 'УДАЛИТЬ ВСЕ':
                             delete_all_table_from_database()
                             break
+                        else:
+                            print('Возврат в главное меню')
+                            continue
+
                     else:
                         answer = delete_user(int(user))
                         print(answer)
                 else:
-                    print()
+                    print('ID не введен: возврат в главное меню')
+                    raise ValueError(f'Ожидалось (Int or "DROP ALL"). Получено {type(user)}')
+
+            elif int(action) == 5:
+                id_or_fio = input('Введите ID пользователя или полное ФИО: ').strip()
+                if id_or_fio == '':
+                    print('ID или ФИО не введено: возврат в главное меню')
                     continue
-            elif action == 5:
+
+                answer = search_user(id_or_fio)
+                print(answer)
+            elif int(action) == 6:
                 answer = adds_users_from_rand_fio()
                 print(answer)
-            elif action == 6:
+            elif int(action) == 7:
                 answer = my_select_query()
-                for user in answer:
-                    print(f'\n{user}\n')
+                for i, (user, pcs) in enumerate(answer, 1):
+                    print(f'\n{i}. {user} | {pcs.model_pc}\n')
             else:
-                print()
+                print('Выберите от 1 до 7')
                 continue
+
         except ValueError as err:
-            logger.error(err)
+            logger.error(f'Ошибка ValueError | {err}')
             print()
             continue
+        except Exception as err:
+            logger.error(f'Неизвестная ошибка Exception - {err}')

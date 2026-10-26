@@ -9,17 +9,19 @@ class UsersORM(Base):
     fullname: Mapped[str]
     age: Mapped[int]
     have_pc: Mapped[bool | None]
+    email: Mapped[str]
+
     def __repr__(self):
-        return f'Users(id={self.id}, fullname={self.fullname}, age={self.age}), have_pc={self.have_pc}'
+        return f'Users(id={self.id}, fullname={self.fullname}, age={self.age}), email={self.email}, have_pc={self.have_pc}'
     def __str__(self):
-        return f'ID: {self.id} | {self.fullname}. Возраст: {self.age}. Наличие ПК: {self.have_pc}'
+        return f'ID: {self.id} | {self.fullname}. Возраст: {self.age}. Email: {self.email}. Наличие ПК: {self.have_pc}'
 
 
 class Pc(Base):
     __tablename__ = 'pcs'
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    owner_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+    owner_id: Mapped[int] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'))
     model_pc: Mapped[str | None]
     def __repr__(self):
         return f'Pc(id={self.id} | owner_id={self.owner_id} | model_pc={self.model_pc})'
@@ -37,4 +39,12 @@ class UserNotFoundError(AppError):
 
 
 class InvalidAgeError(AppError):
+    pass
+
+
+class FIODuplicateError(AppError):
+    pass
+
+
+class EmailDuplicateError(AppError):
     pass

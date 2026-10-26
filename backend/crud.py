@@ -2,7 +2,13 @@ from sqlalchemy import select, join
 
 from database import SessionLocal, Base, engine
 from models import UsersORM, Pc, AppError, UserNotFoundError, InvalidAgeError
-from rand_users import generation_fio, generation_age, generation_have_pc, generation_model_pc
+from rand_users import (
+    generation_age,
+    generation_fio,
+    generation_have_pc,
+    generation_model_pc,
+    generation_email_address
+    )
 from config import logger
 
  
@@ -15,10 +21,10 @@ def select_users() -> str:
         logger.info('SELECT запрос выполнен (получение всех пользователей).')
         return users
 
-def add_user(fullname: str, age: int, have_pc: bool, model_pc: str|None) -> str:
+def add_user(fullname: str, age: int, have_pc: bool, email: str, model_pc: str = None)  -> str:
     with SessionLocal() as session:
         try:
-            new_user = UsersORM(fullname=fullname, age=age, have_pc=have_pc)
+            new_user = UsersORM(fullname=fullname, age=age, have_pc=have_pc, email=email)
             session.add(new_user)
             session.flush()
             if have_pc is True:
@@ -34,7 +40,7 @@ def add_user(fullname: str, age: int, have_pc: bool, model_pc: str|None) -> str:
 
             return logger.error(err)
 
-def update_user(id: int, new_fio: str = '', new_age: int = -1, have_pc: bool = None) -> str:
+def update_user(id: int, new_fio: str = '', new_age: int = -1, have_pc: bool = None, email: str = '') -> str:
     with SessionLocal() as session:
         try:
             user = session.get(UsersORM, id)
@@ -44,6 +50,8 @@ def update_user(id: int, new_fio: str = '', new_age: int = -1, have_pc: bool = N
                 user.age = new_age
             if have_pc != None:
                 user.have_pc = have_pc
+            if email != '':
+                user.email = email
             session.commit()
 
             return logger.info('Изменения сохранены.')
@@ -98,25 +106,33 @@ def search_user(id_or_fio: str) -> str | None:
 
 
 
-def adds_users_from_rand_fio() -> str:
+def adds_users_from_rand_user() -> str:
     
-    news_users = generation_fio()
+    users = []
+    pc_users = []
     
     with SessionLocal() as session:
         try:
-            for i in range(1, 16):
-                age = generation_age()
-                have_pc = generation_have_pc()
+            for _ in range(1, 16):
+                email = generation_email_address()
+                if email is True:
+                    return 'свободные email закончились'
+                new_user = UsersORM(fullname=generation_fio(), age=generation_age(), have_pc=generation_have_pc(), email=email)
                 
-                user = UsersORM(fullname=news_users[i], age=age, have_pc=have_pc)
-                session.add(user)
-                session.flush()
-                if have_pc is True:
-                    pc_user = Pc(owner_id=user.id, model_pc=generation_model_pc())
-                    session.add(pc_user)
-                session.commit()
-                logger.info(f'Пользователь {[user]} добавлен.')
+                users.append(new_user)
+                if new_user.have_pc is True:
+                    pc_user = Pc(owner_id=new_user.id, model_pc=generation_model_pc())
+                    pc_users.append(pc_user)
+                logger.info(f'Пользователь {[new_user]} добавлен в сессию.')
 
+            session.add_all(users)
+            session.flush()
+            j = 0
+            for i in pc_users:
+                i.owner_id = users[j].id
+                j += 1
+            session.add_all(pc_users)
+            session.commit()
 
             return logger.info('Добавлено 15 случайных пользователей.') 
                 
@@ -134,7 +150,6 @@ def my_select_query():
         stmt = select(UsersORM, Pc).join(Pc, Pc.owner_id == UsersORM.id)
         result = session.execute(stmt)
         users = result.all()
-        logger.info(users)
         
         logger.info('JOIN запрос выполнен (кастомный).')
         return users

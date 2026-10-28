@@ -9,7 +9,7 @@ from crud import (
     my_select_query
     )
 from config import logger
-from models import FIODuplicateError, EmailDuplicateError, InvalidAgeError
+from models import FullnameDuplicateError, EmailDuplicateError, InvalidAgeError
     
 @logger.catch
 def menu():
@@ -94,7 +94,7 @@ def cli_add_user() -> None:
             all_users = select_users()
             for user in all_users:
                 if fullname == user.fullname:
-                    raise FIODuplicateError('Пользователь с таким ФИО уже существует')
+                    raise FullnameDuplicateError('Пользователь с таким ФИО уже существует')
                 
             if fullname == '':
                 print('ФИО не введено: возврат в главное меню')
@@ -144,8 +144,8 @@ def cli_add_user() -> None:
                         continue
 
         
-        except FIODuplicateError as err:
-            logger.error(f'FIODuplicateError: {err}')
+        except FullnameDuplicateError as err:
+            logger.error(f'FullnameDuplicateError: {err}')
             continue
 
         except ValueError as err:
@@ -159,7 +159,7 @@ def cli_add_user() -> None:
 def cli_update_user() -> None:
     while True:
         try:
-            fio = ''
+            fullname = ''
             age = -1
             have_pc = None
             email = ''
@@ -199,17 +199,17 @@ def cli_update_user() -> None:
             if '1' in parameters:
                 while True:
                     try:
-                        fio = input('Введите новое ФИО: ')
-                        if fio == '':
+                        fullname = input('Введите новое ФИО: ')
+                        if fullname == '':
                             print('ФИО не может быть пустым: возврат в главное меню')
                             return
                         
                         for user in all_users:
-                            if fio == user.fullname:
-                                raise FIODuplicateError('Пользователь с таким ФИО уже существует')
+                            if fullname == user.fullname:
+                                raise FullnameDuplicateError('Пользователь с таким ФИО уже существует')
                         break
-                    except FIODuplicateError as err:
-                        logger.error(f'FIODuplicateError: {err}')
+                    except FullnameDuplicateError as err:
+                        logger.error(f'FullnameDuplicateError: {err}')
                         continue
 
             if '2' in parameters:
@@ -249,7 +249,7 @@ def cli_update_user() -> None:
                         logger.error(f'EmailDuplicateError: {err}')
                         continue
 
-            answer = update_user(id=user_id, new_fio=fio, new_age=age, have_pc=have_pc, email=email)
+            answer = update_user(id=user_id, new_fullname=fullname, new_age=age, have_pc=have_pc, email=email)
             return
         
         except ValueError as err:
@@ -302,12 +302,12 @@ def cli_delete_user() -> None | str:
 def cli_search_user() -> None:
     while True:
         try:
-            id_or_fio = input('Введите ID пользователя или полное ФИО (Нажмите "Enter" для возврата в главное меню): ').strip()
-            if id_or_fio == '':
+            id_or_fullname = input('Введите ID пользователя или полное ФИО (Нажмите "Enter" для возврата в главное меню): ').strip()
+            if id_or_fullname == '':
                 print('ID или ФИО не введено: возврат в главное меню')
                 return
 
-            answer = search_user(id_or_fio)
+            answer = search_user(id_or_fullname)
             print(answer)
 
         except ValueError as err:

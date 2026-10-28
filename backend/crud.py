@@ -4,7 +4,7 @@ from database import SessionLocal, Base, engine
 from models import UsersORM, Pc, AppError, UserNotFoundError, InvalidAgeError
 from rand_users import (
     generation_age,
-    generation_fio,
+    generation_fullname,
     generation_have_pc,
     generation_model_pc,
     generation_email_address
@@ -40,12 +40,12 @@ def add_user(fullname: str, age: int, have_pc: bool, email: str, model_pc: str =
 
             return logger.error(err)
 
-def update_user(id: int, new_fio: str = '', new_age: int = -1, have_pc: bool = None, email: str = '') -> str:
+def update_user(id: int, new_fullname: str = '', new_age: int = -1, have_pc: bool = None, email: str = '') -> str:
     with SessionLocal() as session:
         try:
             user = session.get(UsersORM, id)
-            if new_fio != '':
-                user.fullname = new_fio
+            if new_fullname != '':
+                user.fullname = new_fullname
             if new_age != -1:
                 user.age = new_age
             if have_pc != None:
@@ -77,17 +77,17 @@ def delete_all_table_from_database() -> None:
     Base.metadata.drop_all(bind=engine)
 
 
-def search_user(id_or_fio: str) -> str | None:
+def search_user(id_or_fullname: str) -> str | None:
     with SessionLocal() as session:
         try:
 
-            if id_or_fio.isdigit() is True:
-                user = session.get(UsersORM, int(id_or_fio))
+            if id_or_fullname.isdigit() is True:
+                user = session.get(UsersORM, int(id_or_fullname))
                 if user == None:
                     raise UserNotFoundError
                 return user
             else:
-                query = select(UsersORM).where(UsersORM.fullname == id_or_fio)
+                query = select(UsersORM).where(UsersORM.fullname == id_or_fullname)
                 result = session.execute(query)
                 user = result.scalars().first()
                 if user is None:
@@ -117,7 +117,7 @@ def adds_users_from_rand_user() -> str:
                 email = generation_email_address()
                 if email is True:
                     return 'свободные email закончились'
-                new_user = UsersORM(fullname=generation_fio(), age=generation_age(), have_pc=generation_have_pc(), email=email)
+                new_user = UsersORM(fullname=generation_fullname(), age=generation_age(), have_pc=generation_have_pc(), email=email)
                 
                 users.append(new_user)
                 if new_user.have_pc is True:

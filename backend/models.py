@@ -42,7 +42,7 @@ class InvalidAgeError(AppError):
     pass
 
 
-class FIODuplicateError(AppError):
+class FullnameDuplicateError(AppError):
     pass
 
 

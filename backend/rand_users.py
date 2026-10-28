@@ -30,14 +30,14 @@ lastname = [
     'Макаров', 'Андреев', 'Зайцев', 'Сергеев',
     'Тарасов', 'Беляев', 'Поляков',
     ]
-surname_man = [
+middlename_man = [
     'Александрович', 'Владимирович',
     'Николаевич', 'Сергеевич',
     'Викторович', 'Алексеевич',
     'Дмитриевич', 'Михайлович',
     'Иванович', 'Андреевич'
     ]
-surname_woman = [
+middlename_woman = [
     'Александровна', 'Владимировна',
     'Николаевна', 'Сергеевна',
     'Викторовна', 'Алексеевна',
@@ -88,11 +88,11 @@ email_beginning = [
 email_last = ['@gmail.com', '@mail.ru', '@yandex.ru']
 
 
-def generation_fio() -> str:
+def generation_fullname() -> str:
     if random.choice(gender) == 'М':
-        return f'{random.choice(lastname)} {random.choice(firstname_man)} {random.choice(surname_man)}'
+        return f'{random.choice(lastname)} {random.choice(firstname_man)} {random.choice(middlename_man)}'
     else:
-        return f'{random.choice(lastname)}а {random.choice(firstname_woman)} {random.choice(surname_woman)}'
+        return f'{random.choice(lastname)}а {random.choice(firstname_woman)} {random.choice(middlename_woman)}'
 
 def generation_age() -> int:
     return random.randint(10, 86)

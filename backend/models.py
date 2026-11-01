@@ -1,4 +1,4 @@
-from database import Base
+from backend.database import Base
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -9,7 +9,8 @@ class UsersORM(Base):
     fullname: Mapped[str]
     age: Mapped[int]
     have_pc: Mapped[bool | None]
-    email: Mapped[str]
+    email: Mapped[str]# = mapped_column(unique=True) #? позже
+    
 
     def __repr__(self):
         return f'Users(id={self.id}, fullname={self.fullname}, age={self.age}), email={self.email}, have_pc={self.have_pc}'
@@ -23,6 +24,7 @@ class Pc(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     owner_id: Mapped[int] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'))
     model_pc: Mapped[str | None]
+
     def __repr__(self):
         return f'Pc(id={self.id} | owner_id={self.owner_id} | model_pc={self.model_pc})'
     def __str__(self):

@@ -1,15 +1,15 @@
-from sqlalchemy import select, join
+from sqlalchemy import Boolean, select, join
 
-from database import SessionLocal, Base, engine
-from models import UsersORM, Pc, AppError, UserNotFoundError, InvalidAgeError
-from rand_users import (
+from backend.database import SessionLocal, Base, engine
+from backend.models import UsersORM, Pc, AppError, UserNotFoundError, InvalidAgeError
+from backend.rand_users import (
     generation_age,
     generation_fullname,
     generation_have_pc,
     generation_model_pc,
     generation_email_address
     )
-from config import logger
+from backend.config import logger
 
  
 def select_users() -> str:

@@ -1,4 +1,5 @@
-from crud import (
+from backend.crud import (
+    search_check_for_duplicates,
     select_users,
     add_user,
     update_user,
@@ -6,11 +7,12 @@ from crud import (
     delete_all_table_from_database,
     search_user,
     adds_users_from_rand_user,
-    my_select_query
+    my_select_query,
+    filter_query
     )
-from config import logger
-from models import FullnameDuplicateError, EmailDuplicateError, InvalidAgeError
-    
+from backend.config import logger
+from backend.models import FullnameDuplicateError, EmailDuplicateError, InvalidAgeError, UsersORM
+
 @logger.catch
 def menu():
     while True:

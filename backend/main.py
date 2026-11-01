@@ -1,6 +1,6 @@
-from database import Base, engine
+from backend.database import Base, engine
 
-from cli import menu
+from backend.cli import menu
 
 Base.metadata.create_all(bind=engine)
 

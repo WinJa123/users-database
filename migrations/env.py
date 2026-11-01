@@ -7,6 +7,7 @@ from alembic import context
 
 
 from backend.database import Base
+from backend.models import UsersORM, PcORM
 from backend.config import DB_URL
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

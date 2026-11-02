@@ -8,7 +8,7 @@ class UsersORM(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     fullname: Mapped[str]
     age: Mapped[int]
-    have_pc: Mapped[bool | None]
+    have_pc: Mapped[bool]
     email: Mapped[str]# = mapped_column(unique=True) #? позже
     
 

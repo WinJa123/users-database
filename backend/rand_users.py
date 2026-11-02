@@ -45,7 +45,7 @@ middlename_woman = [
     'Ивановна', 'Андреевна'
     ]
 gender = ['М', 'Ж']
-have_pc = [True, False, None]
+have_pc = [True, False]
 
 
 pc_models = [

@@ -1,4 +1,5 @@
 from backend.crud import (
+    delete_all_users,
     search_check_for_duplicates,
     select_users,
     add_user,
@@ -23,7 +24,7 @@ def menu():
             print('4 - Удаление пользователя')
             print('5 - Найти пользователя по ID или ФИО')
             print('6 - Фильры/Сортировка')
-            print('7 - Добавить 15 случайных пользователей')
+            print('7 - Добавить N случайных пользователей')
             print('8 - Кастомный JOIN запрос')
             print('Пустая строка - возврат в главное меню')
             action = input('Выберите (от 1 до 8): ')
@@ -72,7 +73,6 @@ def menu():
 
 
 
-
 def cli_select_users() -> None:
     while True:
         try:
@@ -93,13 +93,12 @@ def cli_add_user() -> None:
     while True:
         try:
             fullname = input('Введите ФИО: ').strip()
-            all_users = select_users()
-            for user in all_users:
-                if fullname == user.fullname:
+            duplicate_user = search_check_for_duplicates(fullname_or_email=fullname)
+            if duplicate_user is True:
                     raise FullnameDuplicateError('Пользователь с таким ФИО уже существует')
                 
             if fullname == '':
-                print('ФИО не введено: возврат в главное меню')
+                print('ФИО не введено: возврат в главное меню...\n')
                 return
             while True:
                 try:
@@ -108,7 +107,7 @@ def cli_add_user() -> None:
                         print('Ошибка: возраст не введен. Введите возраст')
                         continue
                     if age == '-1':
-                        print('Возврат в главное меню')
+                        print('Возврат в главное меню...\n')
                         return
                     
                     if age.isdigit() is False and '-' in age == False:
@@ -130,9 +129,9 @@ def cli_add_user() -> None:
                         
                         email_address = input('Введите email (@gmail.com, @mail.ru, @yandex.ru): ')
                         if email_address.endswith(('@gmail.com', '@mail.ru', '@yandex.ru')) is True:
-                            for user in all_users:
-                                if email_address == user.email:
-                                    raise EmailDuplicateError('Пользователь с такой почтой уже существует')
+                            duplicate_user = search_check_for_duplicates(fullname_or_email=email_address)
+                            if duplicate_user is True:
+                                raise EmailDuplicateError('Пользователь с такой почтой уже существует')
                                     
                             answer = add_user(fullname=fullname, age=int(age), have_pc=status_have_pc, model_pc=model_pc, email=email_address)
                             print(answer)
@@ -270,27 +269,32 @@ def cli_delete_user() -> None | str:
             for user in all_users:
 
                 print(f'\n{user}\n')
-            user = input('Введите ID пользователя которого нужно удалить (DROP ALL - Удалить все таблицы): ')
+            user = input('Введите ID пользователя которого нужно удалить (DROP ALL USERS/TABLES - Удалить все/х пользователей/таблицы): ')
             if user == '':
-                print('ID не введено: возврат в главное меню')
+                print('ID не введено: возврат в главное меню...\n')
                 return
-            
-            if user.isdigit() or user == 'DROP ALL':
-                if user == 'DROP ALL':
+            if user.isdigit() or user == 'DROP ALL TABLES' or user == 'DROP ALL USERS':
+                if user == 'DROP ALL TABLES':
                     if input('Подтвердите удаление всех таблиц. Введите "УДАЛИТЬ ВСЕ": ') == 'УДАЛИТЬ ВСЕ':
                         delete_all_table_from_database()
                         return 'DROP ALL TABLES'
                     else:
-                        print('Возврат в главное меню')
+                        print('Возврат в главное меню...\n')
                         return
-
+                if user == 'DROP ALL USERS':
+                    if input('Подтвердите удаление всех таблиц. Введите "УДАЛИТЬ ВСЕХ ПОЛЬЗОВАТЕЛЕЙ": ') == 'УДАЛИТЬ ВСЕХ ПОЛЬЗОВАТЕЛЕЙ':
+                        delete_all_users()
+                        return 'DROP ALL USERS'
+                    else:
+                        print('Возврат в главное меню...\n')
+                        return
                 else:
                     answer = delete_user(int(user))
                     print(answer)
                     return
                 
             else:
-                print('ID не введен: возврат в главное меню')
+                print('ID не введен: возврат в главное меню...\n')
                 raise ValueError(f'Ожидалось (Int or "DROP ALL"). Получено {type(user)}')
         except ValueError as err:
             logger.error(f'Ошибка ValueError | {err}')
@@ -321,7 +325,7 @@ def cli_search_user() -> None:
             logger.error(f'Неизвестная ошибка Exception - {err}')
             return
 
-def cli_filter_sort_users() -> None:            #! НЕ ДОДЕЛАНО, ФИЛЬТРАЦИЯ ПОЛЬЗОВАТЕЛЕЙ
+def cli_filter_sort_users() -> None:
     while True:
         try:
             print('1 - Отсортировать по ID')
@@ -331,10 +335,9 @@ def cli_filter_sort_users() -> None:            #! НЕ ДОДЕЛАНО, ФИЛ
             if answer_filter.isdigit() is False:
                 print('Ошибка ввода: возврат в главное меню')
                 raise ValueError(f'Ожидалось (Int or "DROP ALL"). Получено {type(user)}')
-            if int(answer_filter) == 1:
-                all_users = select_users()
-                for i, user in enumerate(all_users, 1):
-                    print(f'\n {i}. {user}\n')
+            filtered_users = filter_query(int(answer_filter))
+            for i, user in enumerate(filtered_users, 1):
+                print(f'\n {i}. {user}\n')
 
         except ValueError as err:
             logger.error(f'Ошибка ValueError | {err}')
@@ -346,10 +349,20 @@ def cli_filter_sort_users() -> None:            #! НЕ ДОДЕЛАНО, ФИЛ
             return
 
 def cli_adds_users_from_rand_user() -> None:
-    answer = adds_users_from_rand_user()
-    if answer == 'свободные email закончились':
-        logger.warning('Свободные Email закончились')        
-    print(answer)
+    while True:
+        quantity_users = input('Введите количество пользователей которых нужно добавить: ')
+        if quantity_users.isdigit() is True:
+            answer = adds_users_from_rand_user(int(quantity_users))
+            if answer == 'свободные email закончились':
+                logger.warning('Свободные Email закончились')        
+            print(answer)
+            return
+        elif quantity_users == '':
+            print('Возврат в главное меню...\n')
+            return
+        else:
+            logger.warning('Введите число. Нажмите "Enter" для возврата в главное меню')
+            continue
 
 def cli_castom_join_select() -> None:
     answer = my_select_query()
